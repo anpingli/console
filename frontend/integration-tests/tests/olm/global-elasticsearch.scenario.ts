@@ -13,7 +13,7 @@ import * as yamlView from '../../views/yaml.view';
 
 describe('Interacting with an `AllNamespaces` install mode Operator (Redis)', () => {
   const deleteRecoveryTime = 60000;
-  const redisOperatorName = 'redis-enterprise-operator';
+  const elasticsearchOperatorName = 'redis-enterprise-operator';
   const testLabel = 'automatedTestName';
   const redisEnterpriseCluster = `${testName}-redisenterprisecluster`;
 
@@ -72,13 +72,13 @@ describe('Interacting with an `AllNamespaces` install mode Operator (Redis)', ()
 
   it('displays subscription creation form for selected Operator', async() => {
     await catalogView.categoryTabs.get(0).click();
-    await catalogPageView.clickFilterCheckbox('providerType-custom');
-    await catalogPageView.catalogTileFor('Redis Enterprise').click();
+    await catalogPageView.clickFilterCheckbox('providerType-red-hat');
+    await catalogPageView.catalogTileFor('Elasticsearch Operator').click();
     await browser.wait(until.visibilityOf(operatorHubView.operatorModal));
     await operatorHubView.operatorModalInstallBtn.click();
     await operatorHubView.createSubscriptionFormLoaded();
 
-    expect(operatorHubView.createSubscriptionFormName.getText()).toEqual('Redis Enterprise');
+    expect(operatorHubView.createSubscriptionFormName.getText()).toEqual('Elasticsearch Operator');
   });
 
   it('selects all namespaces for Operator subscription', async() => {
@@ -96,33 +96,33 @@ describe('Interacting with an `AllNamespaces` install mode Operator (Redis)', ()
     await crudView.isLoaded();
     await catalogPageView.clickFilterCheckbox('installState-installed');
 
-    expect(catalogPageView.catalogTileFor('Redis Enterprise').isDisplayed()).toBe(true);
+    expect(catalogPageView.catalogTileFor('Elasticsearch Operator').isDis`played()).toBe(true);
   });
 
   it(`displays Operator in "Cluster Service Versions" view for "${testName}" namespace`, async() => {
-    await catalogPageView.catalogTileFor('Redis Enterprise').click();
+    await catalogPageView.catalogTileFor('Elasticsearch Operator').click();
     await operatorHubView.operatorModalIsLoaded();
     await operatorHubView.viewInstalledOperator();
     await crudView.isLoaded();
 
-    await browser.wait(until.visibilityOf(crudView.rowForOperator('Redis Enterprise')), 30000);
+    await browser.wait(until.visibilityOf(crudView.rowForOperator('')), 30000);
   });
 
-  it('creates Redis Operator `Deployment`', async() => {
+  it('creates Elasticsearch Operator `Deployment`', async() => {
     await browser.get(`${appHost}/k8s/all-namespaces/deployments`);
     await crudView.isLoaded();
-    await crudView.filterForName(redisOperatorName);
-    await browser.wait(until.textToBePresentInElement(crudView.rowForName(redisOperatorName).$('a[title=pods]'), '1 of 1 pods'), 100000);
+    await crudView.filterForName(elasticsearchOperatorName);
+    await browser.wait(until.textToBePresentInElement(crudView.rowForName(elasticsearchOperatorName).$('a[title=pods]'), '1 of 1 pods'), 100000);
 
-    expect(crudView.rowForName(redisOperatorName).isDisplayed()).toBe(true);
+    expect(crudView.rowForName(elasticsearchOperatorName).isDisplayed()).toBe(true);
   });
 
   xit('recreates Redis Operator `Deployment` if manually deleted', async() => {
-    await crudView.deleteRow('Deployment')(redisOperatorName);
-    await browser.wait(until.textToBePresentInElement(crudView.rowForName(redisOperatorName).$('a[title=pods]'), '0 of 1 pods'));
-    await browser.wait(until.textToBePresentInElement(crudView.rowForName(redisOperatorName).$('a[title=pods]'), '1 of 1 pods'));
+    await crudView.deleteRow('Deployment')(elasticsearchOperatorName);
+    await browser.wait(until.textToBePresentInElement(crudView.rowForName(elasticsearchOperatorName).$('a[title=pods]'), '0 of 1 pods'));
+    await browser.wait(until.textToBePresentInElement(crudView.rowForName(elasticsearchOperatorName).$('a[title=pods]'), '1 of 1 pods'));
 
-    expect(crudView.rowForName(redisOperatorName).isDisplayed()).toBe(true);
+    expect(crudView.rowForName(elasticsearchOperatorName).isDisplayed()).toBe(true);
   }, deleteRecoveryTime);
 
   it('displays metadata about Redis Operator in the "Overview" section', async() => {
