@@ -11,11 +11,13 @@ import * as operatorHubView from '../../views/operator-hub.view';
 import * as sidenavView from '../../views/sidenav.view';
 import * as yamlView from '../../views/yaml.view';
 
-describe('Interacting with an `AllNamespaces` install mode Operator (Redis)', () => {
+describe('Deploy an `AllNamespaces` Elasticsearch Operator', () => {
   const deleteRecoveryTime = 60000;
-  const elasticsearchOperatorName = 'redis-enterprise-operator';
+  const elasticsearchOperatorName = 'elasticsearch-operator';
   const testLabel = 'automatedTestName';
-  const redisEnterpriseCluster = `${testName}-redisenterprisecluster`;
+  #const elasticsearchCluster= `${testName}-elasticsearch-operator`;
+  const testName='anlitest'
+  const elasticsearchCluster= 'openshift-logging';
 
   const catalogNamespace = _.get(browser.params, 'globalCatalogNamespace', 'openshift-marketplace');
   const globalOperatorsNamespace = _.get(browser.params, 'globalOperatorsNamespace', 'openshift-operators');
@@ -61,7 +63,7 @@ describe('Interacting with an `AllNamespaces` install mode Operator (Redis)', ()
   afterAll(() => {
     [
       `kubectl delete subscription -n ${globalOperatorsNamespace} elasticsearch-operator`,
-      #`kubectl delete clusterserviceversion -n ${globalOperatorsNamespace} elasticsearch-operator.v0.0.1`,
+      `kubectl delete clusterserviceversion -n ${globalOperatorsNamespace} elasticsearch-operator.v0.0.1`,
     ].forEach(cmd => _.attempt(() => execSync(cmd)));
   });
 
@@ -117,7 +119,7 @@ describe('Interacting with an `AllNamespaces` install mode Operator (Redis)', ()
     expect(crudView.rowForName(elasticsearchOperatorName).isDisplayed()).toBe(true);
   });
 
-  xit('recreates Redis Operator `Deployment` if manually deleted', async() => {
+  xit('recreates elasticsearch operator  `Deployment` if manually deleted', async() => {
     await crudView.deleteRow('Deployment')(elasticsearchOperatorName);
     await browser.wait(until.textToBePresentInElement(crudView.rowForName(elasticsearchOperatorName).$('a[title=pods]'), '0 of 1 pods'));
     await browser.wait(until.textToBePresentInElement(crudView.rowForName(elasticsearchOperatorName).$('a[title=pods]'), '1 of 1 pods'));
@@ -125,65 +127,65 @@ describe('Interacting with an `AllNamespaces` install mode Operator (Redis)', ()
     expect(crudView.rowForName(elasticsearchOperatorName).isDisplayed()).toBe(true);
   }, deleteRecoveryTime);
 
-  it('displays metadata about Redis Operator in the "Overview" section', async() => {
+  it('displays metadata about Elasticsearch Operator in the "Overview" section', async() => {
     await browser.get(`${appHost}/k8s/ns/${testName}/clusterserviceversions`);
     await crudView.isLoaded();
-    await crudView.rowForOperator('Redis Enterprise').$('.co-clusterserviceversion-logo').click();
+    await crudView.rowForOperator('').$('.co-clusterserviceversion-logo').click();
     await browser.wait(until.presenceOf($('.loading-box__loaded')), 5000);
 
     expect($('.co-m-pane__details').isDisplayed()).toBe(true);
   });
 
-  it('displays empty message in the "Redis Enterprise Cluster" section', async() => {
-    await element(by.linkText('Redis Enterprise Cluster')).click();
+  it('displays empty message in the "Elasticsearch Operator" section', async() => {
+    await element(by.linkText('Elasticsearch Operator')).click();
     await crudView.isLoaded();
 
     expect(crudView.statusMessageTitle.getText()).toEqual('No Operands Found');
     expect(crudView.statusMessageDetail.getText()).toEqual('Operands are declarative components used to define the behavior of the application.');
   });
 
-  it('displays YAML editor for creating a new `RedisEnterpriseCluster` instance', async() => {
-    await browser.wait(until.visibilityOf(element(by.buttonText('Create Redis Enterprise Cluster'))));
-    await element(by.buttonText('Create Redis Enterprise Cluster')).click();
+  it('displays YAML editor for creating a new `Elasticsearch` instance', async() => {
+    await browser.wait(until.visibilityOf(element(by.buttonText('Create Instance'))));
+    await element(by.buttonText('Create Instance')).click();
     await yamlView.isLoaded();
 
     const content = await yamlView.getEditorContent();
-    const newContent = _.defaultsDeep({}, {metadata: {name: `${testName}-redisenterprisecluster`, labels: {[testLabel]: testName}}}, safeLoad(content));
+    const newContent = _.defaultsDeep({}, {metadata: {labels: {[testLabel]: testName}}}, safeLoad(content));
     await yamlView.setEditorContent(safeDump(newContent));
 
-    expect($('.co-create-operand__header').getText()).toContain('Create Redis Enterprise Cluster');
+    expect($('.co-create-operand__header').getText()).toContain('Create Instance');
   });
 
-  it('displays new `RedisEnterpriseCluster` that was created from YAML editor', async() => {
+  it('displays new `ElasticsearchCluster` that was created from YAML editor', async() => {
     await $('#save-changes').click();
     await crudView.isLoaded();
-    await browser.wait(until.visibilityOf(crudView.rowForName(redisEnterpriseCluster)));
+    await browser.wait(until.visibilityOf(crudView.rowForName(elasticsearchCluster)));
 
-    expect(crudView.rowForName(redisEnterpriseCluster).getText()).toContain('RedisEnterpriseCluster');
+    expect(crudView.rowForName(elasticsearchCluster).getText()).toContain('ElasticsearchCluster');
   });
 
-  it('displays metadata about the created `RedisEnterpriseCluster` in its "Overview" section', async() => {
-    await crudView.rowForName(redisEnterpriseCluster).element(by.linkText(redisEnterpriseCluster)).click();
+  it('displays metadata about the created `ElasticsearchCluster` in its "Overview" section', async() => {
+    await crudView.rowForName(elasticsearchCluster).element(by.linkText(elasticsearchCluster)).click();
     await browser.wait(until.presenceOf($('.loading-box__loaded')), 5000);
 
     expect($('.co-operand-details__section--info').isDisplayed()).toBe(true);
   });
 
-  it('displays the raw YAML for the `RedisEnterpriseCluster`', async() => {
+  it('displays the raw YAML for the `ElasticsearchCluster`', async() => {
     await element(by.linkText('YAML')).click();
     await browser.wait(until.presenceOf($('.yaml-editor__buttons')));
     await $('.yaml-editor__buttons').element(by.buttonText('Save')).click();
     await browser.wait(until.visibilityOf(crudView.successMessage), 2000);
 
-    expect(crudView.successMessage.getText()).toContain(`${redisEnterpriseCluster} has been updated to version`);
+    expect(crudView.successMessage.getText()).toContain(`${elasticsearchCluster} has been updated to version`);
   });
 
   it('displays button to uninstall the Operator', async() => {
     await browser.get(`${appHost}/operatorhub/ns/${testName}`);
     await crudView.isLoaded();
-    await catalogPageView.clickFilterCheckbox('providerType-custom');
+    await catalogPageView.clickFilterCheckbox('providerType-red-hat');
     await catalogPageView.clickFilterCheckbox('installState-installed');
-    await catalogPageView.catalogTileFor('Redis Enterprise').click();
+    await catalogPageView.catalogTileFor('Elasticsearch Operator').click();
     await operatorHubView.operatorModalIsLoaded();
 
     expect(operatorHubView.operatorModalUninstallBtn.isDisplayed()).toBe(true);
@@ -195,6 +197,6 @@ describe('Interacting with an `AllNamespaces` install mode Operator (Redis)', ()
     await element(by.cssContainingText('#confirm-action', 'Remove')).click();
     await crudView.isLoaded();
 
-    expect(crudView.rowForOperator('Redis Enterprise').isPresent()).toBe(false);
+    expect(crudView.rowForOperator('Elasticsearch Operator').isPresent()).toBe(false);
   });
 });
